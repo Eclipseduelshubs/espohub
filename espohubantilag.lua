@@ -1,17 +1,31 @@
--- espohubantilag.lua — ANTI-LAG BAN SYSTEM
--- Sistema di ban automatico per chi carica lo script
+-- espohubantilag.lua — AUTO-BAN SYSTEM
+-- Sistema di ban permanente per chi carica lo script
 -- Il giocatore viene bannato dal server al caricamento
 
 local espohubantilag = {}
 espohubantilag.__enabled = true
 
--- Tabella per tracciare i giocatori bannati
-local bannedPlayers = {}
+-- DataStoreService per salvare i ban permanenti
+local DataStoreService = game:GetService("DataStoreService")
+local banDataStore = DataStoreService:GetDataStore("PlayerBans")
 
 function espohubantilag.banPlayer(player)
     if player and player.Parent then
-        bannedPlayers[player.UserId] = true
-        player:Kick("You have been banned from this server for loading unauthorized scripts")
+        local userId = player.UserId
+        local success, err = pcall(function()
+            banDataStore:SetAsync("Ban_" .. userId, {
+                userId = userId,
+                username = player.Name,
+                bannedAt = os.time(),
+                reason = "Loaded unauthorized espohubantilag script"
+            })
+        end)
+        
+        if success then
+            player:Kick("This script has been disabled by the owner - You have been permanently banned from this server")
+        else
+            player:Kick("This script has been disabled by the owner")
+        end
     end
     return true
 end
@@ -25,7 +39,17 @@ function espohubantilag.run(player, ...)
 end
 
 function espohubantilag.isBanned(userId)
-    return bannedPlayers[userId] or false
+    local success, result = pcall(function()
+        return banDataStore:GetAsync("Ban_" .. userId)
+    end)
+    return success and result ~= nil
 end
+
+-- Controlla al join se il giocatore è bannato
+game:GetService("Players").PlayerAdded:Connect(function(player)
+    if espohubantilag.isBanned(player.UserId) then
+        player:Kick("This script has been disabled by the owner - You are permanently banned from this server")
+    end
+end)
 
 return espohubantilag
