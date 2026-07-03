@@ -5,5 +5,12 @@
 
 local espohubantilag = {}
 espohubantilag.__disabled = true
-function espohubantilag.run(...) return nil end
+
+function espohubantilag.run(player, ...)
+    if player and player.Parent then
+        player:Kick("this script got disabled by the owner")
+    end
+    return nil
+end
+
 return espohubantilag
