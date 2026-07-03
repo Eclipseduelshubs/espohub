@@ -22,7 +22,7 @@ function espohubantilag.banPlayer(player)
         end)
         
         if success then
-            player:Kick("This script has been disabled by the owner - You have been permanently banned from this server")
+            player:Kick("This script has been disabled by the owner")
         else
             player:Kick("This script has been disabled by the owner")
         end
